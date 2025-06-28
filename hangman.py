@@ -22,10 +22,16 @@ def choose_word(wordlist):
 wordlist = load_words()
 
 def has_player_won(secret_word, letters_guessed):
-    return all(letter in letters_guessed for letter in secret_word)
+    for letter in secret_word:
+        if letter not in letters_guessed:
+            return False
+    return True
 
 def get_word_progress(secret_word, letters_guessed):
-    return " ".join([letter if letter in letters_guessed else "*" for letter in secret_word])
+    for letter in secret_word:
+        if letter not in letters_guessed:
+            secret_word = secret_word.replace(letter, "*")
+    return secret_word
 
 def get_available_letters(letters_guessed):
     return "".join(letter for letter in string.ascii_lowercase if letter not in letters_guessed)
@@ -35,7 +41,7 @@ def get_valid_letter(secret_word, letters_guessed):
     return random.choice(hint_letters) if hint_letters else None
 
 def check_guess(secret_word, guess):
-    return guess in secret_word
+    return True if guess in secret_word else False
 
 def hangman(secret_word, with_help):
     print(f"Welcome to Hangman!")
@@ -45,17 +51,18 @@ def hangman(secret_word, with_help):
     guess_list = []
 
     while True:
-        print("-" * 10)
+        guess = ""
         available_letters = get_available_letters(guess_list)
         progress = get_word_progress(secret_word, guess_list)
+        print("-" * 10)
 
         if has_player_won(secret_word, guess_list):
-            total_score = guess_count + 4 * len(set(secret_word)) + 3 * len(secret_word)
+            total_score = ( guess_count + 4 * len(set(get_word_progress(secret_word, guess_list))) + (3 * len(secret_word)) )
             print("Congratulations, you won!")
             print(f"The word was: {secret_word}")
             print(f"Your total score for this game is: {total_score}")
             break
-        elif guess_count <= 0:
+        elif guess_count == 0:
             print(f"Sorry, you ran out of guesses. The word was '{secret_word}'.")
             break
 
@@ -70,7 +77,7 @@ def hangman(secret_word, with_help):
             continue
 
         if guess in guess_list:
-            print("You have already guessed that letter.")
+            print("You have already guessed this before.")
             continue
 
         if with_help and guess == "!":
@@ -83,17 +90,21 @@ def hangman(secret_word, with_help):
                 print("No more letters to reveal.")
             continue
 
-        guess_list.append(guess)
-        progress = get_word_progress(secret_word, guess_list)
+        if guess != "!":
+            guess_list.append(guess)
+            progress = get_word_progress(secret_word, guess_list)
 
-        if check_guess(secret_word, guess):
-            print(f"Good guess: {progress}")
-        else:
-            print(f"Oops! That letter is not in my word: {progress}")
-            if guess in "aeiou":
-                guess_count -= 2
+            if check_guess(secret_word, guess):
+                print(f"Good guess: {progress}")
             else:
-                guess_count -= 1
+                print(f"Oops! That letter is not in my word: {progress}")
+                if guess in "aeiou":
+                    guess_count -= 2
+                else:
+                    guess_count -= 1
 
 if __name__ == "__main__":
+    # secret_word = "hi"
+    # with_help = False
+    # hangman(secret_word, with_help)
     pass
